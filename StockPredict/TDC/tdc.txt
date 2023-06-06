@@ -1,0 +1,2 @@
+Train Score: 0.52 RMSE
+Test Score: 0.69 RMSE
