@@ -5,10 +5,12 @@ from enum import Enum
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
+from colorama import init
 from keras.layers import (
     LSTM,
     Conv1D,
     Dense,
+    Dropout,
     Flatten,
     MaxPooling1D,
     RepeatVector,
@@ -17,65 +19,40 @@ from keras.layers import (
 from keras.models import Sequential
 from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import MinMaxScaler
+from termcolor import colored
 
-from modules.fireant import get_fireant_dataset, get_historical_url
+from modules.cafef import get_cafef_dataset
+from modules.fireant import get_fireant_dataset
+from modules.ssi import get_ssi_dataset
+from modules.stock import StockCode
 
+init()
+
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # hide log
 print("Number of GPUs Available: ", len(tf.config.list_physical_devices("GPU")))
 # fix random seed for reproducibility
 tf.random.set_seed(7)
 
 
-class StockCode(Enum):
-    TDC = "TDC"
-    # VN30:
-    ACB = "ACB"
-    BCM = "BCM"
-    BID = "BID"
-    BVH = "BVH"
-    CTG = "CTG"
-    FPT = "FPT"
-    GAS = "GAS"
-    GVR = "GVR"
-    HDB = "HDB"
-    HPG = "HPG"
-    MBB = "MBB"
-    MSN = "MSN"
-    MWG = "MWG"
-    NVL = "NVL"
-    PDR = "PDR"
-    PLX = "PLX"
-    POW = "POW"
-    SAB = "SAB"
-    SSI = "SSI"
-    STB = "STB"
-    TCB = "TCB"
-    TPB = "TPB"
-    VCB = "VCB"
-    VHM = "VHM"
-    VIB = "VIB"
-    VIC = "VIC"
-    VJC = "VJC"
-    VNM = "VNM"
-    VPB = "VPB"
-    VRE = "VRE"
-
-
 class ModelType(Enum):
     CNN = "CNN"
     LSTM = "LSTM"
+    LSTM_DNN = "LSTM_DNN"
     CNN_LSTM = "CNN_LSTM"
+    CNN_LSTM_DNN = "CNN_LSTM_DNN"
 
 
-TIME_STEP = 10
+TIME_STEP = 5
 TRAIN_TEST_RATIO = 0.8
-EPOCH_SIZE = 1000
+EPOCH_SIZE = 1500
 BATCH_SIZE = 8
+MODEL_TYPE = ModelType.LSTM_DNN
 
 
 class StockPrediction:
     # for LSTM best is time_step 4/1, lstm 3
     # for CNN best is time_step 10/32
-    start_date = "2023-01-01"
+    start_date = datetime.datetime(2022, 1, 1)
     scaler = MinMaxScaler(feature_range=(0, 1))
     stock_dir = "StockPredict"
     early_stopping = tf.keras.callbacks.EarlyStopping(
@@ -93,10 +70,14 @@ class StockPrediction:
         stock_code: StockCode = StockCode.FPT,
     ):
         self.stock_code = stock_code.value
+        self.epoch_size = EPOCH_SIZE
+        self.batch_size = BATCH_SIZE
+        self.model_type = MODEL_TYPE
+        self.time_step = TIME_STEP
 
     def train(
         self,
-        start_date: str = "2023-01-01",
+        start_date: datetime.datetime = datetime.datetime(2022, 1, 1),
         model_type: ModelType = ModelType.CNN,
         epoch_size: int = EPOCH_SIZE,
         batch_size: int = BATCH_SIZE,
@@ -120,7 +101,7 @@ class StockPrediction:
         self.evaluate_model()
         self.plot_result(dataset)
 
-    def load_model_time_step(self, version):
+    def load_model_time_step(self, version: int):
         time_step_file = open(
             f"./{self.stock_dir}/{self.stock_code}/{version}/info.md", "r"
         )
@@ -129,30 +110,62 @@ class StockPrediction:
         time_step_str = time_step_file.readline()
         return int(time_step_str[11:])
 
-    def predict(self, predict_number, version=0):
-        if version == 0:
-            for dir in os.scandir(f"./{self.stock_dir}/{self.stock_code}"):
-                if dir.is_dir():
-                    version = int(dir.name) if int(dir.name) > version else version
+    def get_latest_version(self) -> int:
+        version = 0
+        for dir in os.scandir(f"./{self.stock_dir}/{self.stock_code}"):
+            if dir.is_dir():
+                version = int(dir.name) if int(dir.name) > version else version
+        return version
+
+    def load_model(self, version) -> Sequential:
         model = tf.keras.models.load_model(
             f"./{self.stock_dir}/{self.stock_code}/{version}/"
         )
+        return model
+
+    def predict(
+        self,
+        predict_number,
+        end_date=datetime.date.today().strftime("%Y-%m-%d"),
+        version=0,
+    ):
+        if version == 0:
+            version = self.get_latest_version()
+        model = self.load_model(version)
         time_step = self.load_model_time_step(version)
         self.time_step = time_step
-        dataset = self.transform(self.get_dataset(self.time_step))
+        dataset = self.transform(
+            self.get_dataset(
+                limit=self.time_step,
+                end_date=end_date,
+            )
+        )
         last_i_price_close = dataset.copy()
         last_i_price_close = np.reshape(last_i_price_close, (1, self.time_step, 1))
-        print(last_i_price_close.shape)
         predicted_prices = []
-        for i in range(predict_number):
-            predicted_price = model.predict(last_i_price_close)
-            print(predicted_price)
-            print(f"Next {i} price", self.scaler.inverse_transform(predicted_price))
+        for _ in range(predict_number):
+            predicted_price = model.predict(last_i_price_close, verbose=0)
             predicted_prices.append(predicted_price)
             last_i_price_close[0] = np.reshape(
                 np.append(last_i_price_close[0][1:], [[0]]), (self.time_step, 1)
             )
             last_i_price_close[0][-1] = predicted_price
+        last_price = float(self.scaler.inverse_transform([dataset[-1]])[0])
+        next_predicted_price = float(
+            self.scaler.inverse_transform([predicted_price[0]])[0]
+        )
+        change_percentage = float(
+            (next_predicted_price - last_price) / last_price * 100
+        )
+        print(
+            f"{self.stock_code}:\n  Current {last_price:.4f}\n  Next  {next_predicted_price:.4f}"
+        )
+        print(
+            colored(
+                f"  Change {change_percentage:.4f}%",
+                "green" if change_percentage >= 0 else "red",
+            )
+        )
         plt.clf()
         plot_data = np.append(dataset, predicted_prices)
         plot_data = self.scaler.inverse_transform([plot_data])
@@ -163,7 +176,31 @@ class StockPrediction:
             plot_data[0][len(dataset) - 1 :],
             "green",
         )
-        plt.savefig(f"./{self.stock_code}_predict.png")
+        plt.savefig(f"./Predict/{self.stock_code}_predict.png")
+        plt.close()
+        return next_predicted_price, change_percentage
+
+    def update_model(self):
+        version = self.get_latest_version()
+        print(version)
+        model = self.load_model(version)
+        time_step = self.load_model_time_step(version)
+        dataset = self.get_dataset()
+        dataset = self.transform(dataset)
+        x, y = self.create_timestep_dataset(dataset, time_step)
+        print(x.shape, y.shape)
+        x = np.reshape(x, (-1, time_step, 1))
+        model.compile(loss="mean_squared_error", optimizer="adam")
+        model.fit(
+            x,
+            y,
+            epochs=self.epoch_size,
+            batch_size=self.batch_size,
+            verbose=2,
+            callbacks=[self.early_stopping],
+        )
+        self.model = model
+        self.save_model(self.get_latest_version())
 
     def to_string(self):
         print_list = [
@@ -177,12 +214,14 @@ class StockPrediction:
         ]
         return "\n".join(print_list)
 
-    def get_dataset(self, limit=2000) -> np.ndarray[any]:
-        start_date = self.start_date
-        end_date = (datetime.date.today()).strftime("%Y-%m-%d")
+    def get_dataset(
+        self,
+        start_date=start_date,
+        end_date=(datetime.date.today()),
+        limit=2000,
+    ) -> np.ndarray[any]:
         self.end_date = end_date
-        self.start_date = start_date
-        dataset = get_fireant_dataset(
+        dataset = get_ssi_dataset(
             stock_code=self.stock_code,
             limit=limit,
             start_date=start_date,
@@ -218,12 +257,12 @@ class StockPrediction:
         self.test = test
 
     # convert an array of values into a dataset matrix
-    def create_timestep_dataset(self, dataset, time_step):
+    def create_timestep_dataset(self, dataset, time_step, ahead=0):
         dataX, dataY = [], []
-        for i in range(len(dataset) - time_step - 1):
+        for i in range(len(dataset) - time_step - 1 - ahead):
             a = dataset[i : (i + time_step), 0]
             dataX.append(a)
-            dataY.append(dataset[i + time_step, 0])
+            dataY.append(dataset[i + time_step + ahead, 0])
         return np.array(dataX), np.array(dataY)
 
     def create_trainXY_testXY(self):
@@ -257,28 +296,36 @@ class StockPrediction:
             model.add(Dense(64, activation="relu"))
             model.add(Dense(1))
         elif self.model_type == ModelType.LSTM:
-            model.add(LSTM(100, "relu", input_shape=(self.time_step, 1)))
+            model.add(LSTM(50, input_shape=(self.time_step, 1), return_sequences=True))
+            model.add(Dropout(0.2))
+            model.add(LSTM(50, input_shape=(self.time_step, 1), return_sequences=True))
+            model.add(LSTM(50, input_shape=(self.time_step, 1)))
+            model.add(Dense(1))
+        elif self.model_type == ModelType.LSTM_DNN:
+            model.add(LSTM(50, input_shape=(self.time_step, 1), return_sequences=True))
+            model.add(Dropout(0.2))
+            model.add(LSTM(50, input_shape=(self.time_step, 1), return_sequences=True))
+            model.add(LSTM(50, input_shape=(self.time_step, 1)))
+            model.add(Dense(16))
+            model.add(Dense(8))
             model.add(Dense(1))
         elif self.model_type == ModelType.CNN_LSTM:
             model.add(
-                Conv1D(64, (3), activation="relu", input_shape=(self.time_step, 1))
+                Conv1D(32, (3), activation="relu", input_shape=(self.time_step, 1))
             )
-            model.add(MaxPooling1D((2)))
-            model.add(Flatten())
-            model.add(Dense(64, activation="relu"))
-            model.add(
-                Dense(self.time_step, activation="relu"),
-            )
-            model.add(RepeatVector(self.time_step))
-            # model.add(TimeDistributed(self.time_step))
-            model.add(
-                LSTM(
-                    100, "relu", input_shape=(self.time_step, 1), return_sequences=True
-                )
-            )
-            model.add(LSTM(2, "relu", input_shape=(self.time_step, 1)))
+            model.add(LSTM(300, "relu", input_shape=(self.time_step, 1)))
             model.add(Dense(1))
-            model.summary()
+        elif self.model_type == ModelType.CNN_LSTM_DNN:
+            model.add(
+                Conv1D(32, (5), activation="relu", input_shape=(self.time_step, 1))
+            )
+            model.add(
+                LSTM(32, "relu", input_shape=(self.time_step, 1), return_sequences=True)
+            )
+            model.add(LSTM(16, "relu", input_shape=(self.time_step, 1)))
+            model.add(Dense(16))
+            model.add(Dense(8))
+            model.add(Dense(1))
         else:
             print("Unknown model type")
         model.compile(loss="mean_squared_error", optimizer="adam")
@@ -346,12 +393,12 @@ class StockPrediction:
         self.trainPredict = train_predict
         self.testPredict = test_predict
 
-    def save_model(self):
-        version = 0
-        for dir in os.scandir(f"./{self.stock_dir}/{self.stock_code}"):
-            if dir.is_dir():
-                version = int(dir.name) if int(dir.name) > version else version
-        version += 1
+    def save_model(self, version=0):
+        if version == 0:
+            for dir in os.scandir(f"./{self.stock_dir}/{self.stock_code}"):
+                if dir.is_dir():
+                    version = int(dir.name) if int(dir.name) > version else version
+            version += 1
         self.version = version
         self.model.save(f"./{self.stock_dir}/{self.stock_code}/{version}")
 
@@ -375,3 +422,4 @@ class StockPrediction:
         plt.plot(testPredictPlot)
         # plt.show()
         plt.savefig(f"./{self.stock_dir}/{self.stock_code}/{self.version}/predict.png")
+        plt.close()
