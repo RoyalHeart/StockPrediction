@@ -14,7 +14,7 @@ from modules.stock import StockCode
 def train_all_stock():
     for stock in StockCode:
         stock_model = StockPrediction(stock)
-        stock_model.train(
+        stock_model.train_data(
             start_date="2022-01-01",
             model_type=ModelType.LSTM_DNN,
             epoch_size=200,
@@ -64,21 +64,52 @@ def predict_all_stock():
 
 
 def main():
-    vnm = StockPrediction(
-        StockCode.BID,
+    stock_model = StockPrediction(
+        StockCode.VIC,
     )
-    vnm.train(
-        start_date="2022-01-01",
+    stock_model.train_data(
+        start_date=datetime(2022, 1, 1),
         model_type=ModelType.LSTM_DNN,
         epoch_size=200,
-        batch_size=8,
-        time_step=5,
+        batch_size=4,
+        time_step=4,
         ratio=0.8,
+        ahead=0,
     )
-    vnm.predict(predict_number=10)
+
+    stock_model.predict(predict_number=1)
+    stock_model = StockPrediction(
+        StockCode.SSI,
+    )
+    stock_model.train_data(
+        start_date=datetime(2022, 1, 1),
+        model_type=ModelType.LSTM_DNN,
+        epoch_size=200,
+        batch_size=4,
+        time_step=4,
+        ratio=0.8,
+        ahead=0,
+    )
+    stock_model.predict(predict_number=1)
+
+
+def predict():
+    stock_model = StockPrediction(
+        StockCode.BID,
+    )
+    stock_model.predict(predict_number=1)
+    stock_model = StockPrediction(
+        StockCode.VIC,
+    )
+    stock_model.predict(predict_number=1)
+    stock_model = StockPrediction(
+        StockCode.VJC,
+    )
+    stock_model.predict(predict_number=1)
 
 
 if __name__ == "__main__":
-    # main()
+    main()
+    # predict()
     # train_all_stock()
-    predict_all_stock()
+    # predict_all_stock()

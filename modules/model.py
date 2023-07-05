@@ -6,24 +6,18 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 from colorama import init
-from keras.layers import (
-    LSTM,
-    Conv1D,
-    Dense,
-    Dropout,
-    Flatten,
-    MaxPooling1D,
-    RepeatVector,
-    TimeDistributed,
-)
+from keras.layers import (LSTM, Conv1D, Dense, Dropout, Flatten, MaxPooling1D,
+                          RepeatVector, TimeDistributed)
 from keras.models import Sequential
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import (mean_absolute_error,
+                             mean_absolute_percentage_error,
+                             mean_squared_error)
 from sklearn.preprocessing import MinMaxScaler
 from termcolor import colored
 
 from modules.cafef import get_cafef_dataset
 from modules.fireant import get_fireant_dataset
-from modules.ssi import get_ssi_dataset
+from modules.ssi import get_ssi_dataset, get_ssi_dataset_two
 from modules.stock import StockCode
 
 init()
@@ -42,23 +36,24 @@ class ModelType(Enum):
     CNN_LSTM_DNN = "CNN_LSTM_DNN"
 
 
+FEATURE = 2
+AHEAD = 2
 TIME_STEP = 5
 TRAIN_TEST_RATIO = 0.8
 EPOCH_SIZE = 1500
 BATCH_SIZE = 8
 MODEL_TYPE = ModelType.LSTM_DNN
-
+PATIENCE = EPOCH_SIZE * 0.02
 
 class StockPrediction:
     # for LSTM best is time_step 4/1, lstm 3
     # for CNN best is time_step 10/32
-    start_date = datetime.datetime(2022, 1, 1)
     scaler = MinMaxScaler(feature_range=(0, 1))
     stock_dir = "StockPredict"
     early_stopping = tf.keras.callbacks.EarlyStopping(
         monitor="loss",
-        min_delta=0.00001,
-        patience=EPOCH_SIZE * 0.01,
+        min_delta=0.0001,
+        patience=PATIENCE,
         verbose=0,
         mode="auto",
         baseline=None,
@@ -74,6 +69,8 @@ class StockPrediction:
         self.batch_size = BATCH_SIZE
         self.model_type = MODEL_TYPE
         self.time_step = TIME_STEP
+        self.ahead = AHEAD
+        self.start_date: datetime.datetime = datetime.datetime(2022, 1, 1)
 
     def train(
         self,
@@ -83,6 +80,8 @@ class StockPrediction:
         batch_size: int = BATCH_SIZE,
         time_step: int = TIME_STEP,
         ratio: float = TRAIN_TEST_RATIO,
+        ahead: int = AHEAD,
+        feature: int = FEATURE,
     ):
         self.start_date = start_date
         self.epoch_size = epoch_size
@@ -90,9 +89,12 @@ class StockPrediction:
         self.model_type = model_type
         self.time_step = time_step
         self.train_test_ratio = ratio
+        self.ahead = ahead
+        self.feature = feature
+
         dataset = self.get_dataset()
         self.save_dataset_plot(dataset)
-        dataset = self.transform(dataset)
+        # dataset = self.transform(dataset)
         self.split_dataset(self.train_test_ratio)
         self.create_trainXY_testXY()
         self.reshape_input()
@@ -105,7 +107,7 @@ class StockPrediction:
         time_step_file = open(
             f"./{self.stock_dir}/{self.stock_code}/{version}/info.md", "r"
         )
-        for _ in range(4):
+        for _ in range(8):
             time_step_file.readline()
         time_step_str = time_step_file.readline()
         return int(time_step_str[11:])
@@ -126,7 +128,7 @@ class StockPrediction:
     def predict(
         self,
         predict_number,
-        end_date=datetime.date.today().strftime("%Y-%m-%d"),
+        end_date=datetime.datetime.today(),
         version=0,
     ):
         if version == 0:
@@ -216,15 +218,14 @@ class StockPrediction:
 
     def get_dataset(
         self,
-        start_date=start_date,
-        end_date=(datetime.date.today()),
+        end_date=datetime.datetime.today(),
         limit=2000,
     ) -> np.ndarray[any]:
         self.end_date = end_date
-        dataset = get_ssi_dataset(
+        dataset = get_ssi_dataset_two(
             stock_code=self.stock_code,
             limit=limit,
-            start_date=start_date,
+            start_date=self.start_date,
             end_date=end_date,
         )
         self.dataset = dataset
@@ -248,44 +249,58 @@ class StockPrediction:
     # split into train and test sets
     def split_dataset(self, ratio=TRAIN_TEST_RATIO):
         train_size = int(len(self.dataset) * ratio)
-        train, test = (
+        train_data, test_data = (
             self.dataset[0:train_size, :],
             self.dataset[train_size : len(self.dataset), :],
         )
-        print(len(train), len(test))
-        self.train = train
-        self.test = test
+        print(len(train_data), len(test_data))
+        self.train_data = train_data
+        self.test_data = test_data
 
     # convert an array of values into a dataset matrix
-    def create_timestep_dataset(self, dataset, time_step, ahead=0):
+    def create_timestep_dataset(self, dataset, time_step, ahead=AHEAD, y_col=0):
         dataX, dataY = [], []
         for i in range(len(dataset) - time_step - 1 - ahead):
-            a = dataset[i : (i + time_step), 0]
+            a = dataset[i : (i + time_step), :]
             dataX.append(a)
-            dataY.append(dataset[i + time_step + ahead, 0])
+            dataY.append(dataset[i + time_step + ahead, y_col])
         return np.array(dataX), np.array(dataY)
 
     def create_trainXY_testXY(self):
-        trainX, trainY = self.create_timestep_dataset(self.train, self.time_step)
-        testX, testY = self.create_timestep_dataset(self.test, self.time_step)
-        self.trainX = trainX
-        self.trainY = trainY
-        self.testX = testX
-        self.testY = testY
+        # trainX, trainY = self.create_timestep_dataset(
+        #     self.train_data, self.time_step, self.ahead
+        # )
+        # testX, testY = self.create_timestep_dataset(
+        #     self.test_data, self.time_step, self.ahead
+        # )
+        train_x = self.scaler.fit_transform(self.train_data)
+        test_x = self.scaler.transform(self.test_data)
+        train_x, _ = self.create_timestep_dataset(train_x, self.time_step, self.ahead)
+        test_x, _ = self.create_timestep_dataset(test_x, self.time_step, self.ahead)
+        y_col = 0 # close price
+        _, train_y = self.create_timestep_dataset(self.train_data, self.time_step, self.ahead, y_col=y_col)
+        _, test_y = self.create_timestep_dataset(self.test_data, self.time_step, self.ahead, y_col=y_col)
+        # normalize y 
+        train_y = self.scaler.fit_transform(train_y.reshape(-1,1))
+        test_y = self.scaler.transform(test_y.reshape(-1,1))
+        self.train_x = train_x
+        self.train_y = train_y
+        self.test_x = test_x
+        self.test_y = test_y
 
     # reshape input to be [samples, time steps, features]
     def reshape_input(self):
-        trainX = np.reshape(self.trainX, (self.trainX.shape[0], self.time_step, 1))
-        testX = np.reshape(self.testX, (self.testX.shape[0], self.time_step, 1))
-        self.trainX = trainX
-        self.testX = testX
+        train_x = np.reshape(self.train_x, (self.train_x.shape[0], self.time_step, self.feature))
+        test_x = np.reshape(self.test_x, (self.test_x.shape[0], self.time_step, self.feature))
+        self.train_x = train_x
+        self.test_x = test_x
 
     # create and fit the CNN network
     def create_model(self):
         model = Sequential()
         if self.model_type == ModelType.CNN:
             model.add(
-                Conv1D(32, (3), activation="relu", input_shape=(self.time_step, 1))
+                Conv1D(32, (3), activation="relu", input_shape=(self.time_step, self.feature))
             )
             # model.add(MaxPooling1D((2)))
             model.add(Conv1D(64, (3), activation="relu"))
@@ -302,25 +317,25 @@ class StockPrediction:
             model.add(LSTM(50, input_shape=(self.time_step, 1)))
             model.add(Dense(1))
         elif self.model_type == ModelType.LSTM_DNN:
-            model.add(LSTM(50, input_shape=(self.time_step, 1), return_sequences=True))
+            model.add(LSTM(50, input_shape=(self.time_step, self.feature), return_sequences=True))
             model.add(Dropout(0.2))
-            model.add(LSTM(50, input_shape=(self.time_step, 1), return_sequences=True))
-            model.add(LSTM(50, input_shape=(self.time_step, 1)))
+            model.add(LSTM(50, return_sequences=True))
+            model.add(LSTM(50))
             model.add(Dense(16))
             model.add(Dense(8))
             model.add(Dense(1))
         elif self.model_type == ModelType.CNN_LSTM:
             model.add(
-                Conv1D(32, (3), activation="relu", input_shape=(self.time_step, 1))
+                Conv1D(32, (3), activation="relu", input_shape=(self.time_step, self.feature))
             )
-            model.add(LSTM(300, "relu", input_shape=(self.time_step, 1)))
+            model.add(LSTM(300, "relu"))
             model.add(Dense(1))
         elif self.model_type == ModelType.CNN_LSTM_DNN:
             model.add(
-                Conv1D(32, (5), activation="relu", input_shape=(self.time_step, 1))
+                Conv1D(32, (3), activation="relu", input_shape=(self.time_step, self.feature))
             )
             model.add(
-                LSTM(32, "relu", input_shape=(self.time_step, 1), return_sequences=True)
+                LSTM(32, "relu", return_sequences=True)
             )
             model.add(LSTM(16, "relu", input_shape=(self.time_step, 1)))
             model.add(Dense(16))
@@ -332,8 +347,8 @@ class StockPrediction:
         model.summary()
         self.model_json = model.to_json()
         model.fit(
-            self.trainX,
-            self.trainY,
+            self.train_x,
+            self.train_y,
             epochs=self.epoch_size,
             batch_size=self.batch_size,
             verbose=2,
@@ -343,55 +358,77 @@ class StockPrediction:
 
     # make predictions
     def evaluate_model(self):
-        train_predict = self.model.predict(self.trainX)
-        test_predict = self.model.predict(self.testX)
+        train_predict = self.model.predict(self.train_x)
+        test_predict = self.model.predict(self.test_x)
         # invert predictions
         train_predict = self.scaler.inverse_transform(train_predict)
-        train_true = self.scaler.inverse_transform([self.trainY])
+        train_true = self.scaler.inverse_transform(self.train_y).reshape(1,-1)
         test_predict = self.scaler.inverse_transform(test_predict)
-        test_true = self.scaler.inverse_transform([self.testY])
+        test_true = self.scaler.inverse_transform(self.test_y).reshape(1,-1)
+
+        # calculate mean absolute error (MAE)
+        train_mae = mean_absolute_error(train_true[0], train_predict[:, 0])
+        test_mae = mean_absolute_error(test_true[0], test_predict[:, 0])
+        # calculate mean absolute percentage error (MAPE)
+        train_mape = mean_absolute_percentage_error(train_true[0], train_predict[:, 0])
+        test_mape = mean_absolute_percentage_error(test_true[0], test_predict[:, 0])
         # calculate root mean squared error (RMSE)
-        trainScore = np.sqrt(mean_squared_error(train_true[0], train_predict[:, 0]))
-        train_score_percentage = np.sqrt(
+        train_rmse = np.sqrt(mean_squared_error(train_true[0], train_predict[:, 0]))
+        test_rmse = np.sqrt(mean_squared_error(test_true[0], test_predict[:, 0]))
+        # RMSPE
+        train_rmspe = np.sqrt(
             np.mean(
                 np.square(((train_true[0] - train_predict[:, 0]) / train_true[0])),
                 axis=0,
             )
         )
-        test_score_percentage = np.sqrt(
+        test_rmspe = np.sqrt(
             np.mean(
                 np.square(((test_true[0] - test_predict[:, 0]) / test_true[0])),
                 axis=0,
             )
         )
-        train_score_percentage_output = (
-            "Train RMSPE: %.4f RMSPE" % train_score_percentage
-        )
-        test_score_percentage_output = "Test RMSPE: %.4f RMSPE" % test_score_percentage
-        train_score_output = "Train Score: %.4f RMSE" % (trainScore)
-        testScore = np.sqrt(mean_squared_error(test_true[0], test_predict[:, 0]))
-        test_score_output = "Test Score: %.4f RMSE" % (testScore)
-        print(train_score_output)
-        print(test_score_output)
-        print(train_score_percentage_output)
-        print(test_score_percentage_output)
+        train_mae_output = "Train MAE Score: %.10f MAE" % train_mae
+        test_mae_output = "Test MAE Score: %.10f MAE" % test_mae
+        train_mape_output = "Train MAPE Score: %.4f MAPE" % train_mape
+        test_mape_output = "Test MAPE Score: %.4f MAPE" % test_mape
+        train_rmspe_output = "Train RMSPE: %.4f RMSPE" % train_rmspe
+        test_rmspe_output = "Test RMSPE: %.4f RMSPE" % test_rmspe
+        train_rmse_output = "Train Score: %.4f RMSE" % train_rmse
+        test_rmse_output = "Test Score: %.4f RMSE" % test_rmse
+        print(train_mae_output)
+        print(test_mae_output)
+        print(train_mape_output)
+        print(test_mape_output)
+        print(train_rmse_output)
+        print(test_rmse_output)
+        print(train_rmspe_output)
+        print(test_rmspe_output)
         rmse_file = open(
             f"./{self.stock_dir}/{self.stock_code}/{self.version}/info.md", "w"
         )
         rmse_file.write(
-            train_score_output
+            train_mae_output
             + "\n"
-            + test_score_output
+            + test_mae_output
             + "\n"
-            + train_score_percentage_output
+            + train_mape_output
             + "\n"
-            + test_score_percentage_output
+            + test_mape_output
+            + "\n"
+            + train_rmse_output
+            + "\n"
+            + test_rmse_output
+            + "\n"
+            + train_rmspe_output
+            + "\n"
+            + test_rmspe_output
             + "\n"
             + self.to_string()
         )
         rmse_file.close()
-        self.trainPredict = train_predict
-        self.testPredict = test_predict
+        self.train_predict = train_predict
+        self.test_predict = test_predict
 
     def save_model(self, version=0):
         if version == 0:
@@ -404,20 +441,27 @@ class StockPrediction:
 
     def plot_result(self, dataset):
         # shift train predictions for plotting
-        trainPredictPlot = np.empty_like(dataset)
+        # trainPredictPlot = np.empty_like(dataset)
+        trainPredictPlot = np.empty_like(dataset[:,0]).reshape(-1,1)
         trainPredictPlot[:, :] = np.nan
         trainPredictPlot[
-            self.time_step : len(self.trainPredict) + self.time_step, :
-        ] = self.trainPredict
+            self.time_step + self.ahead : len(self.train_predict) + self.time_step + self.ahead, :
+        ] = self.train_predict
         # shift test predictions for plotting
-        testPredictPlot = np.empty_like(dataset)
+        testPredictPlot = np.empty_like(dataset[:,0]).reshape(-1,1)
         testPredictPlot[:, :] = np.nan
         testPredictPlot[
-            len(self.trainPredict) + (self.time_step * 2) + 1 : len(self.dataset) - 1, :
-        ] = self.testPredict
+            len(self.train_predict)
+            + (self.time_step * 2)
+            + (self.ahead * 2)
+            + 1 : len(self.dataset)
+            - 1,
+            :,
+        ] = self.test_predict
+        true_values = (dataset)[:,0].reshape(-1,1)
         # plot baseline and predictions
         plt.clf()
-        plt.plot(self.scaler.inverse_transform(dataset))
+        plt.plot(true_values)
         plt.plot(trainPredictPlot)
         plt.plot(testPredictPlot)
         # plt.show()
