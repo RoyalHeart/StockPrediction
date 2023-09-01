@@ -36,7 +36,7 @@ class ModelType(Enum):
     CNN_LSTM_DNN = "CNN_LSTM_DNN"
 
 
-FEATURE = 2
+FEATURE = 1
 AHEAD = 2
 TIME_STEP = 5
 TRAIN_TEST_RATIO = 0.8
@@ -222,7 +222,7 @@ class StockPrediction:
         limit=2000,
     ) -> np.ndarray[any]:
         self.end_date = end_date
-        dataset = get_ssi_dataset_two(
+        dataset = get_ssi_dataset(
             stock_code=self.stock_code,
             limit=limit,
             start_date=self.start_date,
@@ -311,10 +311,10 @@ class StockPrediction:
             model.add(Dense(64, activation="relu"))
             model.add(Dense(1))
         elif self.model_type == ModelType.LSTM:
-            model.add(LSTM(50, input_shape=(self.time_step, 1), return_sequences=True))
+            model.add(LSTM(50, input_shape=(self.time_step, self.feature), return_sequences=True))
             model.add(Dropout(0.2))
-            model.add(LSTM(50, input_shape=(self.time_step, 1), return_sequences=True))
-            model.add(LSTM(50, input_shape=(self.time_step, 1)))
+            model.add(LSTM(50, return_sequences=True))
+            model.add(LSTM(50))
             model.add(Dense(1))
         elif self.model_type == ModelType.LSTM_DNN:
             model.add(LSTM(50, input_shape=(self.time_step, self.feature), return_sequences=True))
@@ -326,7 +326,7 @@ class StockPrediction:
             model.add(Dense(1))
         elif self.model_type == ModelType.CNN_LSTM:
             model.add(
-                Conv1D(32, (3), activation="relu", input_shape=(self.time_step, self.feature))
+                Conv1D(12, (2), activation="relu", input_shape=(self.time_step, self.feature))
             )
             model.add(LSTM(300, "relu"))
             model.add(Dense(1))
@@ -442,28 +442,27 @@ class StockPrediction:
     def plot_result(self, dataset):
         # shift train predictions for plotting
         # trainPredictPlot = np.empty_like(dataset)
-        trainPredictPlot = np.empty_like(dataset[:,0]).reshape(-1,1)
-        trainPredictPlot[:, :] = np.nan
-        trainPredictPlot[
+        train_predict_plot = np.empty_like(dataset[:,0]).reshape(-1,1)
+        train_predict_plot[:, :] = np.nan
+        train_predict_plot[
             self.time_step + self.ahead : len(self.train_predict) + self.time_step + self.ahead, :
         ] = self.train_predict
         # shift test predictions for plotting
-        testPredictPlot = np.empty_like(dataset[:,0]).reshape(-1,1)
-        testPredictPlot[:, :] = np.nan
-        testPredictPlot[
-            len(self.train_predict)
+        test_predict_plot = np.empty_like(dataset[:,0]).reshape(-1,1)
+        test_predict_plot[:, :] = np.nan
+        test_predict_plot[
+            len(self.train_predict) + 1
             + (self.time_step * 2)
             + (self.ahead * 2)
-            + 1 : len(self.dataset)
-            - 1,
-            :,
+            : len(self.dataset) - 1,
+            :
         ] = self.test_predict
         true_values = (dataset)[:,0].reshape(-1,1)
         # plot baseline and predictions
         plt.clf()
         plt.plot(true_values)
-        plt.plot(trainPredictPlot)
-        plt.plot(testPredictPlot)
+        plt.plot(train_predict_plot)
+        plt.plot(test_predict_plot)
         # plt.show()
         plt.savefig(f"./{self.stock_dir}/{self.stock_code}/{self.version}/predict.png")
         plt.close()

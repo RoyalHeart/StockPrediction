@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Hello, have a nice day!</h1>
+<div class="container">
+    {% for stock in stocks %}
+    {% include 'stock/stock-container.html' with context %}
+    {% endfor %}
+</div>
+{% endblock %}

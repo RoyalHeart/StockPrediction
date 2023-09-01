@@ -62,12 +62,39 @@ def get_ssi_dataset_two(
     ).json()
     close_prices_res = response["c"]
     volumes_res = response["v"]
-    close_prices = []
+    values = []
     for i in range(len(close_prices_res)):
-        close_prices.append([close_prices_res[i], volumes_res[i]])
-    dataset = np.asarray(close_prices, "float32")
+        values.append([close_prices_res[i], volumes_res[i]])
+    dataset = np.asarray(values, "float32")
     dataset = np.reshape(dataset, (-1, 2))
     return dataset[-limit:]
+
+def get_ssi_dataset_date(
+    stock_code: str,
+    limit: int,
+    start_date: datetime.datetime = datetime.datetime(2022, 1, 1, 0, 0),
+    end_date: datetime.datetime = (datetime.datetime.today()),
+)-> tuple[list[float, float], list[datetime.datetime]]:
+    params = create_params(stock_code, start_date, end_date)
+    response = requests.get(
+        SSI_URL,
+        params=params,
+        headers={
+            "Accept": "application/json",
+            "User-Agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Mobile Safari/537.36",
+        },
+    ).json()
+    time = response["t"]
+    close_prices_res = response["c"]
+    volumes_res = response["v"]
+    values = []
+    dates =[]
+    for i in range(len(close_prices_res)):
+        dates.append(datetime.datetime.fromtimestamp(time[i]))
+        values.append([close_prices_res[i], volumes_res[i]])
+    dataset = np.asarray(values, "float32")
+    dataset = np.reshape(dataset, (-1, 2))
+    return dataset[-limit:], dates[-limit:]
 
 
 # print(get_ssi_dataset_two("ACB", 5))
