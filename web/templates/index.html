@@ -1,9 +1,21 @@
 {% extends 'base.html' %}
 {% block content %}
-<h1>Hello, have a nice day!</h1>
+<h1 style="margin-left: 3%">Hello, have a nice day!</h1>
+<div class="header-news">
+    <div class="header-news-wrapper">
+        {% for new in news %}
+        <a class="header-new" target="_blank" href="{{new.url}}">{{new.title}}</a>
+        {% endfor %}
+    </div>
+</div>
 <div class="container">
     {% for stock in stocks %}
     {% include 'stock/stock-container.html' with context %}
     {% endfor %}
+</div>
+<div id="footer">
+    <h5>Source: news are from <a href="https://vietstock.vn">vietstock.vn</a> and stock data is from <a
+            href="https://iboard.ssi.com.vn/">iboard.ssi.com.vn</a>
+        and the website is made by <a href="https://github.com/RoyalHeart">RoyalHeart</a></h5>
 </div>
 {% endblock %}

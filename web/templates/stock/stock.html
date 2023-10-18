@@ -1,6 +1,5 @@
 <div hx-get="/back/{{name}}/{{date}}" hx-swap="outerHTML transition:true" class="stock-prediction">
-    More details
-    <div>{{name}}</div>
     <div>Closed price: {{prediction.price}}</div>
     <div>Predicted price: {{prediction.predicted_price}}</div>
+    <div>Predicted ratio: {{prediction.predicted_ratio}}</div>
 </div>

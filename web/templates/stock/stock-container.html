@@ -1,4 +1,12 @@
 <div class="stock-container">
-    <div class="stock-name">{{stock.name}}</div>
+    <div class="stock-name">{{stock.name}}
+    </div>
+    <div class="stock-news">
+        <div class="stock-news-wrapper">
+            {% for new in stock.news %}
+            <a class="stock-new" target="_blank" href="{{new.url}}">{{new.title}}</a>
+            {% endfor %}
+        </div>
+    </div>
     {% include 'stock/stock-display.html' with context %}
 </div>

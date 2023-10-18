@@ -1,0 +1,33 @@
+.header-news {
+  overflow: hidden;
+}
+
+.header-news-wrapper {
+  display: flex;
+}
+
+.header-new {
+  font-size: 20px;
+  flex-shrink: 0;
+  width: 50%;
+  /* box-sizing: border-box; */
+  padding: 10px;
+  /* text-align: center;
+  margin: 5px 0; */
+  color: rgba(245, 245, 220, 0.822);
+}
+
+@keyframes tickerh {
+  0% {
+    transform: translate3d(100%, 0, 0);
+  }
+  100% {
+    transform: translate3d(-550%, 0, 0);
+  }
+}
+.header-news-wrapper {
+  animation: tickerh linear 50s infinite;
+}
+.header-news-wrapper:hover {
+  animation-play-state: paused;
+}
