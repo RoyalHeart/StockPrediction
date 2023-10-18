@@ -4,17 +4,17 @@ anyio==3.7.1
 asttokens==2.2.1
 astunparse==1.6.3
 backcall==0.2.0
-backports.functools-lru-cache @ file:///home/conda/feedstock_root/build_artifacts/backports.functools_lru_cache_1618230623929/work
+backports.functools-lru-cache
 cachetools==5.3.1
 certifi==2023.5.7
 charset-normalizer==3.1.0
 click==8.1.7
-colorama @ file:///home/conda/feedstock_root/build_artifacts/colorama_1666700638685/work
+colorama
 comm==0.1.3
 contourpy==1.0.7
 cycler==0.11.0
 debugpy==1.6.7
-decorator @ file:///home/conda/feedstock_root/build_artifacts/decorator_1641555617451/work
+decorator
 et-xmlfile==1.1.0
 exceptiongroup==1.1.3
 executing==1.2.0
@@ -35,7 +35,7 @@ h5py==3.8.0
 httplib2==0.22.0
 httptools==0.6.0
 idna==3.4
-importlib-metadata @ file:///home/conda/feedstock_root/build_artifacts/importlib-metadata_1682176699712/work
+importlib-metadata
 importlib-resources==5.12.0
 ipykernel==6.23.1
 ipython==8.13.2
@@ -57,15 +57,15 @@ numpy==1.24.3
 oauthlib==3.2.2
 openpyxl==3.1.2
 opt-einsum==3.3.0
-packaging @ file:///home/conda/feedstock_root/build_artifacts/packaging_1681337016113/work
+packaging
 pandas==2.0.2
 parso==0.8.3
 pickleshare==0.7.5
 Pillow==9.5.0
-platformdirs @ file:///home/conda/feedstock_root/build_artifacts/platformdirs_1683850015520/work
+platformdirs
 prompt-toolkit==3.0.38
 protobuf==3.19.6
-psutil @ file:///D:/bld/psutil_1681775298734/work
+psutil
 pure-eval==0.2.2
 pyasn1==0.5.0
 pyasn1-modules==0.3.0
@@ -74,7 +74,7 @@ pydantic_core==2.6.1
 Pygments==2.15.1
 pygsheets==2.0.6
 pyparsing==3.0.9
-python-dateutil @ file:///home/conda/feedstock_root/build_artifacts/python-dateutil_1626286286081/work
+python-dateutil
 python-dotenv==1.0.0
 pytz==2023.3
 pywin32==306
@@ -85,7 +85,7 @@ requests-oauthlib==1.3.1
 rsa==4.9
 scikit-learn==1.2.2
 scipy==1.10.1
-six @ file:///home/conda/feedstock_root/build_artifacts/six_1620240208055/work
+six
 sniffio==1.3.0
 stack-data==0.6.2
 starlette==0.27.0
@@ -99,7 +99,7 @@ termcolor==2.3.0
 threadpoolctl==3.1.0
 tornado==6.3.2
 traitlets==5.9.0
-typing_extensions @ file:///home/conda/feedstock_root/build_artifacts/typing_extensions_1685045523825/work
+typing_extensions
 tzdata==2023.3
 uritemplate==4.1.1
 urllib3==1.26.16
@@ -109,4 +109,4 @@ wcwidth==0.2.6
 websockets==11.0.3
 Werkzeug==2.3.4
 wrapt==1.15.0
-zipp @ file:///home/conda/feedstock_root/build_artifacts/zipp_1677313463193/work
+zipp
