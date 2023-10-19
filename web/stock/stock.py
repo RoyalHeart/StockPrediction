@@ -2,9 +2,44 @@ import random
 import sys
 
 sys.path.insert(0, "..")
-from modules.ssi import get_ssi_dataset_date
+from enum import Enum
 
 from .news import get_stock_news
+from .ssi import get_ssi_dataset_date
+
+
+class StockCode(Enum):
+    # VN30:
+    ACB = "ACB"
+    BCM = "BCM"
+    BID = "BID"
+    BVH = "BVH"
+    CTG = "CTG"
+    FPT = "FPT"
+    GAS = "GAS"
+    GVR = "GVR"
+    HDB = "HDB"
+    HPG = "HPG"
+    MBB = "MBB"
+    MSN = "MSN"
+    MWG = "MWG"
+    NVL = "NVL"
+    PDR = "PDR"
+    PLX = "PLX"
+    POW = "POW"
+    SAB = "SAB"
+    SSI = "SSI"
+    STB = "STB"
+    TCB = "TCB"
+    TPB = "TPB"
+    VCB = "VCB"
+    VHM = "VHM"
+    VIB = "VIB"
+    VIC = "VIC"
+    VJC = "VJC"
+    VNM = "VNM"
+    VPB = "VPB"
+    VRE = "VRE"
 
 
 class Prediction:

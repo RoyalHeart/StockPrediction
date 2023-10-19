@@ -1,12 +1,9 @@
 from fastapi import Depends, FastAPI, Form, Request, Response
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from stock.news import get_headernews
-from stock.stock import Stock
-
-from modules.stock import StockCode
+from stock.stock import Stock, StockCode
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -16,7 +13,6 @@ templates = Jinja2Templates(directory="templates")
 stocks = []
 for stock_code in StockCode:
     stocks.append(Stock(stock_code.name))
-# stocks = [Stock("SSI"), Stock("POW"), Stock("VIC"), Stock("ACB"), Stock("VJC")]
 
 
 @app.get("/", response_class=HTMLResponse)
