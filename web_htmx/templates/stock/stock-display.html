@@ -1,0 +1,5 @@
+<div class="stock-display">
+    {% for prediction in stock.predictions %}
+    {% include 'stock/stock-prediction.html' with context %}
+    {% endfor %}
+</div>

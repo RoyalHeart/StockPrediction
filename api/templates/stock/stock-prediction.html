@@ -1,0 +1,17 @@
+<div hx-get="http://localhost:8001/{{stock.name}}/{{prediction.date}}" hx-swap="outerHTML transition:true"
+    class="stock-prediction">
+    <div>{{prediction.date}}</div>
+    <div>{{prediction.price}}</div>
+    {% if prediction.predicted_ratio > 0 %}
+    <div style="color:rgb(128, 255, 128)">UP</div>
+    {% elif prediction.predicted_ratio == 0 %}
+    <div style="color:orange">UNCHANGED</div>
+    {% else %}
+    <div style="color:red">DOWN</div>
+    {% endif %}
+    {% if prediction.result == 'true' %}
+    <div style="color:rgb(128, 255, 128)">&#10003</div>
+    {% else %}
+    <div style="color:red">&#10005</div>
+    {% endif %}
+</div>

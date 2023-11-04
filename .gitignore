@@ -1,2 +1,6 @@
+# python
 **/__pycache__
 modules/__pycache__/
+
+# ngrok token
+ngrok.yml

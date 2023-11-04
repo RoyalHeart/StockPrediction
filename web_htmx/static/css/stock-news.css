@@ -1,0 +1,53 @@
+.stock-news {
+  overflow: hidden;
+  height: 30px;
+  display: inline-block;
+  text-align: center;
+  width: 80%;
+}
+
+.stock-news-wrapper {
+  position: relative;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+}
+
+.stock-new {
+  text-align: center;
+  line-height: 30px;
+  font-size: 20px;
+  flex-shrink: 0;
+  width: 100%;
+  color: rgba(245, 245, 220, 0.822);
+}
+
+@keyframes tickerv {
+  0% {
+    bottom: 0;
+  } /* FIRST ITEM */
+  20% {
+    bottom: 30px;
+  } /* SECOND ITEM */
+  40% {
+    bottom: 60px;
+  } /* THIRD ITEM */
+  60% {
+    bottom: 90px;
+  } /* FORTH ITEM */
+  80% {
+    bottom: 120px;
+  } /* FORTH ITEM */
+  100% {
+    bottom: 0;
+  } /* BACK TO FIRST */
+}
+.stock-news-wrapper {
+  animation-name: tickerv;
+  animation-duration: 10s;
+  animation-iteration-count: infinite;
+  animation-timing-function: cubic-bezier(1, 0, 0.5, 0);
+}
+.stock-news-wrapper:hover {
+  animation-play-state: paused;
+}

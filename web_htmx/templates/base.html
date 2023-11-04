@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <!-- UIkit CSS -->
+    <link rel="stylesheet" href="static/css/style.css" />
+    <!-- UIkit JS -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/uikit@3.6.21/dist/js/uikit.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/uikit@3.6.21/dist/js/uikit-icons.min.js"></script> -->
+
+    <!-- Htmx -->
+    <script src="https://unpkg.com/htmx.org@1.9.4"
+        integrity="sha384-zUfuhFKKZCbHTY6aRR46gxiqszMk5tcHjsVFxnUo8VMus4kHGVdIYVbOYYNlKmHV"
+        crossorigin="anonymous"></script>
+
+    {% block style %}
+    {% endblock %}
+
+</head>
+
+<body class="uk-background-secondary" uk-height-viewport>
+    <!-- {% block header %}
+    {% include 'fragments/header.html' %}
+    {% endblock %} -->
+    {% block content %}
+    {% endblock %}
+
+    {% block javascript %}
+    {% endblock %}
+</body>
+
+</html>
