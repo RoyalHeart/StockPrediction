@@ -4,6 +4,7 @@ const StockNew = (props: INews) => {
       <div className="relative p-[5px] flex flex-col animate-tickerv hover:pause">
         {props.news.map((newObj) => (
           <a
+            key={newObj.url}
             className="underline text-center leading-[30px] text-lg flex-shrink-0 w-[100%]"
             target="_blank"
             href={newObj.url}

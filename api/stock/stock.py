@@ -1,5 +1,6 @@
 import random
 import sys
+from operator import ge
 
 sys.path.insert(0, "..")
 from enum import Enum

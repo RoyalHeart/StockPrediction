@@ -1,3 +1,5 @@
+from re import match
+
 from fastapi import Depends, FastAPI, Form, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -55,10 +57,11 @@ def get_data(request: Request, name, date):
     for stock in stocks:
         if stock.name == name:
             current_stock = stock
-    for prediction in current_stock.predictions:
-        if prediction.date.strftime("%Y-%m-%d") == date:
-            current_prediction = prediction
-            break
+    if current_stock is not None:
+        for prediction in current_stock.predictions:
+            if prediction.date.strftime("%Y-%m-%d") == date:
+                current_prediction = prediction
+                break
     context = {
         "stock": current_stock,
         "prediction": current_prediction,
@@ -77,10 +80,14 @@ def back(request: Request, name, date):
     for stock in stocks:
         if stock.name == name:
             current_stock = stock
-    for prediction in current_stock.predictions:
-        if prediction.date.strftime("%Y-%m-%d") == date:
-            current_prediction = prediction
-            break
+    # match current_stock:
+    #     case Stock:
+    #         return
+    if isinstance(current_stock, Stock):
+        for prediction in current_stock.predictions:
+            if prediction.date.strftime("%Y-%m-%d") == date:
+                current_prediction = prediction
+                break
     context = {
         "request": request,
         "stock": current_stock,

@@ -14,9 +14,9 @@ const config: Config = {
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
       colors: {
-        green: "#73ff73",
-        red: "#ff0f0a",
-        orange: "#fda500",
+        c_green: "#73ff73",
+        c_red: "#ff0f0a",
+        c_orange: "#fda500",
       },
       keyframes: {
         tickerh: {

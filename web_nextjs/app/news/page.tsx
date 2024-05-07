@@ -122,7 +122,12 @@ const Home = async () => {
       <div className="header-news">
         <div className="header-news-wrapper">
           {news.map((newObject: New) => (
-            <a className="header-new" target="_blank" href={newObject.url}>
+            <a
+              key={newObject.url}
+              className="header-new"
+              target="_blank"
+              href={newObject.url}
+            >
               {newObject.title}
             </a>
           ))}

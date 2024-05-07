@@ -75,7 +75,7 @@ def get_ssi_dataset_date(
     limit: int,
     start_date: datetime.datetime = datetime.datetime(2022, 1, 1, 0, 0),
     end_date: datetime.datetime = (datetime.datetime.today()),
-) -> tuple[list[float, float], list[datetime.datetime]]:
+) -> tuple[list[float], list[datetime.datetime]]:
     params = create_params(stock_code, start_date, end_date)
     response = requests.get(
         SSI_URL,
@@ -98,4 +98,4 @@ def get_ssi_dataset_date(
     return dataset[-limit:], dates[-limit:]
 
 
-# print(get_ssi_dataset_two("ACB", 5))
+# print(get_ssi_dataset_date("ACB", 5))

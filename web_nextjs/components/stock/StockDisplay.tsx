@@ -7,6 +7,7 @@ const StockDisplay = (props: IStockDisplay) => {
     <div className="flex flex-row justify-start flex-wrap text-center">
       {props.predictions.map((prediction) => (
         <div
+          key={prediction.date}
           hx-get={"http://localhost:8001/" + props.name + "/" + prediction.date}
           hx-swap="outerHTML transition:true"
           hx-boost="false"
@@ -15,16 +16,16 @@ const StockDisplay = (props: IStockDisplay) => {
           <div className="m-[10px]">{prediction.date}</div>
           <div className="m-[10px]">{prediction.price}</div>
           {prediction.predicted_ratio > 0 ? (
-            <div className="text-green m-[10px]">UP</div>
+            <div className="text-c_green m-[10px]">UP</div>
           ) : prediction.predicted_ratio == 0 ? (
-            <div className="text-orange m-[10px]">UNCHANGED</div>
+            <div className="text-c_orange m-[10px]">UNCHANGED</div>
           ) : (
-            <div className="text-red m-[10px]">DOWN</div>
+            <div className="text-c_red m-[10px]">DOWN</div>
           )}
           {prediction.result ? (
-            <div className="text-green m-[10px]">✓</div>
+            <div className="text-c_green m-[10px]">✓</div>
           ) : (
-            <div className="text-red">✕</div>
+            <div className="text-c_red">✕</div>
           )}
         </div>
       ))}

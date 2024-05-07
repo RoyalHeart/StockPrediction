@@ -9,6 +9,7 @@ const Stocks = (props: IStocks) => {
     <div className="flex flex-col flex-wrap">
       {props.stocks.map((stock) => (
         <div
+          key={stock.name}
           className="m-[10px] relative inline-block self-center w-[90%] bg-black/30
          rounded-md z-[2]"
         >
