@@ -13,8 +13,6 @@ ngrok.yml
 /.pnp
 .pnp.js
 .yarn/install-state.gz
-bun.lockb
-package-lock.json
 
 # testing
 /coverage
@@ -44,3 +42,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# vscode
+.vscode/*

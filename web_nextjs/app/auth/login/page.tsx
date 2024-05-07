@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { headers } from "next/headers";
-import { createClient } from "@/utils/supabase/server";
+import { createSupabaseServerClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { SubmitButton } from "./submit-button";
 import SignInGoogleButton from "./signin-google-button";
@@ -15,7 +15,7 @@ export default function Login({
 
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
-    const supabase = createClient();
+    const supabase = createSupabaseServerClient();
 
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -35,7 +35,7 @@ export default function Login({
     const origin = headers().get("origin");
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
-    const supabase = createClient();
+    const supabase = createSupabaseServerClient();
 
     const { error } = await supabase.auth.signUp({
       email,
@@ -109,7 +109,7 @@ export default function Login({
         >
           Sign Up
         </SubmitButton>
-        <SignInGoogleButton></SignInGoogleButton>
+        <SignInGoogleButton nextUrl="/"></SignInGoogleButton>
         {searchParams?.message && (
           <p className="mt-4 p-4 bg-foreground/10 text-foreground text-center">
             {searchParams.message}

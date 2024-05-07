@@ -17,7 +17,7 @@
 //   // URL to redirect to after sign up process completes
 //   return NextResponse.redirect(`${origin}/`);
 // }
-import { createClient } from "@/utils/supabase/client";
+import { createSupabaseServerClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -29,7 +29,7 @@ export async function GET(request: Request) {
   const next = searchParams.get("next") ?? "/";
 
   if (code) {
-    const supabase = createClient();
+    const supabase = createSupabaseServerClient();
 
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
@@ -40,5 +40,5 @@ export async function GET(request: Request) {
 
   // TODO: Create this page
   // return the user to an error page with instructions
-  return NextResponse.redirect(`${origin}/auth/auth-error`);
+  return NextResponse.redirect(`${origin}/auth/error`);
 }

@@ -52,6 +52,9 @@ const config: Config = {
         tickerh: "tickerh linear 50s infinite",
         tickerv: "tickerv cubic-bezier(1, 0, 0.5, 0) 10s infinite",
       },
+      gridTemplateColumns: {
+        nav: "auto 1fr auto",
+      },
     },
   },
   plugins: [],

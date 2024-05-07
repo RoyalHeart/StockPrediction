@@ -1,16 +1,16 @@
 "use client";
-import { createClient } from "@/utils/supabase/client";
+import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 
 const SignInGoogleButton = async (props: { nextUrl?: string }) => {
-  const supabase = createClient();
-
+  const supabase = createSupabaseBrowserClient();
   const handleLogin = async () => {
+    const redirectionRoute = `${location.origin}/auth/callback?next=${
+      props.nextUrl || ""
+    }`;
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${location.origin}/auth/callback?next=${
-          props.nextUrl || ""
-        }`,
+        redirectTo: redirectionRoute,
       },
     });
   };
