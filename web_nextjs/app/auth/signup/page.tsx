@@ -1,34 +1,40 @@
-import Link from "next/link";
-import { headers } from "next/headers";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
+import { headers } from "next/headers";
+import Link from "next/link";
 import { redirect } from "next/navigation";
-import { SubmitButton } from "../../../components/auth/submit-button";
 import SignInGoogleButton from "../../../components/auth/signin-google-button";
+import { SubmitButton } from "../../../components/auth/submit-button";
 
 export default function Login({
   searchParams,
 }: {
   searchParams: { message: string };
 }) {
-  console.log("RENDER");
-
-  const signIn = async (formData: FormData) => {
+  const signUp = async (formData: FormData) => {
     "use server";
 
+    const origin = headers().get("origin");
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
     const supabase = createSupabaseServerClient();
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        emailRedirectTo: `${origin}/auth/callback`,
+      },
     });
 
     if (error) {
-      return redirect("/auth/login?message=Could not authenticate user");
+      console.log(error);
+
+      return redirect(`/auth/signup?message=${error.message}`);
     }
 
-    return redirect("/");
+    return redirect(
+      "/auth/login?message=Check email to continue sign in process"
+    );
   };
 
   return (
@@ -75,17 +81,17 @@ export default function Login({
           required
         />
         <SubmitButton
-          formAction={signIn}
-          className="bg-green-700 hover:bg-green-800 rounded-md px-4 py-2 text-foreground mb-2"
-          pendingText="Signing In..."
+          formAction={signUp}
+          className="bg-purple-900 hover:bg-purple-950 rounded-md px-4 py-2 text-foreground mb-2"
+          pendingText="Signing Up..."
         >
-          Sign In
+          Sign Up
         </SubmitButton>
         <div>
-          <p className="mb-2">Want to join?</p>
-          <a href="/auth/signup" className="hover:text-inherit">
-            <div className="justify-center items-center border-spacing-1 text-center rounded-md bg-purple-900 hover:bg-purple-950 px-4 py-2 mb-2">
-              START FOR FREE
+          <p className="mb-2">Already joined?</p>
+          <a href="/auth/login" className="hover:text-inherit">
+            <div className="justify-center items-center border-spacing-1 text-center rounded-md bg-green-700 hover:bg-green-800 px-4 py-2 mb-2">
+              LOGIN NOW
             </div>
           </a>
         </div>
