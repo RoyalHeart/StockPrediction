@@ -19,7 +19,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <Script src="https://unpkg.com/htmx.org@1.9.4" />
-      <Script src="https://accounts.google.com/gsi/client" />
+      {/* <Script src="https://accounts.google.com/gsi/client" /> */}
       <body className={inter.className}>{children}</body>
     </html>
   );

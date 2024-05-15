@@ -24,8 +24,10 @@ export const NavActions = async () => {
       <div className="justify-center items-center flex-2 self-center w-20">
         <a href="/auth/login">LOGIN</a>
       </div>
-      <div className="justify-center items-center flex-2 self-center border-spacing-1 text-center mr-5 rounded-md bg-purple-900 p-2">
-        <a href="/auth/signup">START FOR FREE</a>
+      <div className="justify-center items-center flex-2 self-center border-spacing-1 text-center mr-5 rounded-md bg-purple-800 hover:bg-purple-900 p-2">
+        <a href="/auth/signup" className="hover:text-inherit">
+          START FOR FREE
+        </a>
       </div>
     </div>
   );
