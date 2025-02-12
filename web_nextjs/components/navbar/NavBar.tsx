@@ -13,7 +13,7 @@ export const NavBar = () => {
             id="brand"
             className="text-2xl/loose mr-5 bg-gradient-to-r from-green-400 from-25% to-purple-500 to-80% block text-transparent bg-clip-text"
           >
-            <a href="/">
+            <a className="hover:text-transparent" href="/">
               <h1 className="">Trading AI</h1>
             </a>
           </div>

@@ -20,10 +20,14 @@ export const NavActions = async () => {
       </a>
     </div>
   ) : (
-    <div id="action" className="pr-4 flex self-center justify-end">
-      <div className="justify-center items-center flex-2 self-center w-20">
-        <a href="/auth/login">LOGIN</a>
-      </div>
+    <div id="action" className="pr-4 gap-2 flex self-center justify-end">
+      <a
+        className="flex justify-center items-center flex-2 self-center w-20 hover:bg-fuchsia-100/10  p-2 rounded-md"
+        href="/auth/login"
+      >
+        {/* // <div "></div> */}
+        LOGIN
+      </a>
       <div className="justify-center items-center flex-2 self-center border-spacing-1 text-center mr-5 rounded-md bg-purple-800 hover:bg-purple-900 p-2">
         <a href="/auth/signup" className="hover:text-inherit">
           START FOR FREE

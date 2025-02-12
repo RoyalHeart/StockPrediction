@@ -113,15 +113,15 @@ interface New {
   title: string;
 }
 const Home = async () => {
-  const newsRes = await fetch(`http://localhost:8001/news`);
-  const news: New[] = await newsRes.json();
-  const stockRes = await fetch(`http://localhost:8001/stocks`);
+  // const newsRes = await fetch(`http://localhost:8001/news`);
+  // const news: New[] = await newsRes.json();
+  // const stockRes = await fetch(`http://localhost:8001/stocks`);
   return (
     <>
       <h1 className="ml-[3%]">Hello, have a nice day!</h1>
       <div className="header-news">
         <div className="header-news-wrapper">
-          {news.map((newObject: New) => (
+          {/* {news.map((newObject: New) => (
             <a
               key={newObject.url}
               className="header-new"
@@ -130,7 +130,7 @@ const Home = async () => {
             >
               {newObject.title}
             </a>
-          ))}
+          ))} */}
         </div>
       </div>
       <div className="container">
