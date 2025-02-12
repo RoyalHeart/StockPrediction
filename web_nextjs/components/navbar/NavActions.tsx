@@ -25,14 +25,14 @@ export const NavActions = async () => {
         className="flex justify-center items-center flex-2 self-center w-20 hover:bg-fuchsia-100/10  p-2 rounded-md"
         href="/auth/login"
       >
-        {/* // <div "></div> */}
         LOGIN
       </a>
-      <div className="justify-center items-center flex-2 self-center border-spacing-1 text-center mr-5 rounded-md bg-purple-800 hover:bg-purple-900 p-2">
-        <a href="/auth/signup" className="hover:text-inherit">
-          START FOR FREE
-        </a>
-      </div>
+      <a
+        href="/auth/signup"
+        className="justify-center items-center flex-2 self-center border-spacing-1 text-center mr-5 rounded-md bg-purple-800 hover:bg-purple-900 p-2"
+      >
+        START FOR FREE
+      </a>
     </div>
   );
 };
