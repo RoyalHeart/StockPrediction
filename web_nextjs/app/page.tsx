@@ -22,10 +22,17 @@ const Home = async () => {
         <footer id="footer" className="self-center">
           <h5 className="">
             @ 2024, Source: news are from{" "}
-            <a href="https://vietstock.vn">vietstock.vn</a> and stock data is
-            from <a href="https://iboard.ssi.com.vn/">iboard.ssi.com.vn</a> and
-            the website is made by{" "}
-            <a href="https://github.com/RoyalHeart">RoyalHeart</a>
+            <a className="underline" href="https://vietstock.vn">
+              vietstock.vn
+            </a>{" "}
+            and stock data is from{" "}
+            <a className="underline" href="https://iboard.ssi.com.vn/">
+              iboard.ssi.com.vn
+            </a>{" "}
+            and the website is made by{" "}
+            <a className="underline" href="https://github.com/RoyalHeart">
+              RoyalHeart
+            </a>
           </h5>
         </footer>
       </div>
