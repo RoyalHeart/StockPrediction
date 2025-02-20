@@ -1,0 +1,31 @@
+server:
+  port: ${PORT:8800}
+
+spring:
+  application:
+    name: ${EUREKA_CLIENT:gateway-service}
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka}
+  instance:
+    hostname: ${HOSTNAME:localhost}
+
+logging:
+  level:
+    "[org.springframework]": ERROR
+    "[com.example]" : ERROR
+
+custom: 
+  jwt:
+    valid-time: 600000
+    base64-secret: ${JWT_SECRET}
+  rate-limit:
+    capacity: ${RATE_CAPACITY:1000} 
+    refill-amount: ${RATE_AMOUNT:1000}
+    refill-minutes: ${RATE_MINUTES:1}
