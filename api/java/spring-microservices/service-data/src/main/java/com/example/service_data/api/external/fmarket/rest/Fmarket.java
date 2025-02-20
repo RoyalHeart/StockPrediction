@@ -13,7 +13,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClient.RequestHeadersSpec;
 
@@ -29,11 +29,11 @@ import com.example.service_data.api.external.fmarket.res.LoginResponse;
  * @since 01-00
  * @author TamTH1
  */
-@Component
+@Service
 public class Fmarket {
-    @Value("fmarket.email")
+    @Value("${fmarket.email}")
     private String EMAIL;
-    @Value("fmarket.password")
+    @Value("${fmarket.password}")
     private String PASSWORD;
     @Autowired
     RestClient restClient;
@@ -63,9 +63,7 @@ public class Fmarket {
         productTypes.add("TRADING_FUND");
         fundRequest.setProductTypes(productTypes);
         RestClient restClient = RestClient.builder().baseUrl(FMARKET_HOST).build();
-        LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setEmail(EMAIL);
-        loginRequest.setPassword(PASSWORD);
+        LoginRequest loginRequest = LoginRequest.builder().email(EMAIL).password(PASSWORD).build();
         LoginResponse loginResponse = login(loginRequest);
         String accessToken = "Bearer " + loginResponse.getData().getAccessToken();
         RequestHeadersSpec<?> request = restClient.post()
