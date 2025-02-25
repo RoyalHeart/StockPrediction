@@ -1,5 +1,5 @@
 # Stage 1. Package and cache dependencies
-FROM openjdk:22-jdk-slim
+FROM eclipse-temurin:22-jre-alpine
 ARG APPLICATION_USER=spring
 
 # Create a user to run the application, don't run as root

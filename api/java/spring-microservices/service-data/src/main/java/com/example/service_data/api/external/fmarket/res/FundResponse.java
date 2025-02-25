@@ -2,6 +2,6 @@ package com.example.service_data.api.external.fmarket.res;
 
 import java.util.List;
 
-public class FundResponse extends BaseResponse<List<FundData>, FundExtra> {
+public class FundResponse extends FmBaseResponse<List<FundData>, FundExtra> {
 
 }

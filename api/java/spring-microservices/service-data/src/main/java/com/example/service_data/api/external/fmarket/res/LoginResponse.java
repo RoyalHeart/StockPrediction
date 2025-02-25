@@ -4,7 +4,7 @@ import com.example.service_data.api.external.fmarket.res.LoginResponse.LoginData
 
 import lombok.Data;
 
-public class LoginResponse extends BaseResponse<LoginData, LoginData> {
+public class LoginResponse extends FmBaseResponse<LoginData, LoginData> {
 
     @Data
     public class LoginData {
