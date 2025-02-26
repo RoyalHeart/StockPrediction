@@ -30,6 +30,7 @@ services:
     env_file: .env
     depends_on:
       - eureka
+      - gateway
     networks:
       - spring-network
   data:
@@ -42,8 +43,13 @@ services:
     env_file: .env
     depends_on:
       - eureka
+      - gateway
+      - auth
     networks:
       - spring-network
+    dns:
+      - 8.8.8.8
+      - 4.4.4.4
   # fetch:
   #   container_name: fetch
   #   build:
@@ -66,8 +72,14 @@ services:
   #   env_file: .env
   #   depends_on:
   #     - eureka
-  #   networks:
-  #     - spring-network
+
+  # networks:
+  #   - spring-network
 networks:
   spring-network:
     driver: bridge
+# name: host
+# network-mode: host
+# external: true
+# driver_opts:
+#   com.docker.network.bridge.host_binding_ipv4: "127.0.0.1"
